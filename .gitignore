@@ -1,0 +1,27 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build artifacts
+*.test
+*.out
+/main
+/company-scraper
+
+# Dependency directories
+vendor/
+
+# Local environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE settings
+.idea/
+.vscode/
+
+# OS-generated files
+.DS_Store
+Thumbs.db

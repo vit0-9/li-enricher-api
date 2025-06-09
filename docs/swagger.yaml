@@ -1,0 +1,101 @@
+basePath: /api/v1
+host: localhost:3000
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: An API to enrich company data using LinkedIn.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: LinkedIn Enricher API
+  version: "1.0"
+paths:
+  /auth/validate:
+    get:
+      description: Checks if a given LinkedIn session cookie ('li_at') is valid and
+        active.
+      parameters:
+      - description: LinkedIn 'li_at' session cookie
+        in: header
+        name: X-Linkedin-Session-Cookie
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              valid:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              details:
+                type: string
+              error:
+                type: string
+            type: object
+      summary: Validate Session Cookie
+      tags:
+      - Authentication
+  /company/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Scrapes data for a LinkedIn company page. If a session cookie is
+        provided via the 'X-Linkedin-Session-Cookie' header, it performs a full, authenticated
+        scrape. Otherwise, it performs a public scrape for basic JSON-LD data.
+      parameters:
+      - description: Company Slug (e.g., 'google')
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: LinkedIn 'li_at' session cookie for authenticated scraping
+        in: header
+        name: X-Linkedin-Session-Cookie
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully scraped data. 'scrapeType' will be 'full' or 'public'.
+          schema:
+            properties:
+              data:
+                type: object
+              scrapeType:
+                type: string
+            type: object
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              details:
+                type: string
+              error:
+                type: string
+            type: object
+      summary: Scrape Company Data
+      tags:
+      - Company
+swagger: "2.0"
