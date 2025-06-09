@@ -9,10 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "API Support",
-            "email": "support@example.com"
-        },
+        "contact": {},
         "license": {
             "name": "Apache 2.0",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -39,6 +36,12 @@ const docTemplate = `{
                         "name": "X-Linkedin-Session-Cookie",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Proxy URL to use for validation",
+                        "name": "X-Proxy-Url",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -106,6 +109,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "LinkedIn 'li_at' session cookie for authenticated scraping",
                         "name": "X-Linkedin-Session-Cookie",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Proxy URL to use for validation",
+                        "name": "X-Proxy-Url",
                         "in": "header"
                     }
                 ],

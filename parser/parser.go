@@ -14,9 +14,9 @@ import (
 type LiCompany struct {
 	Name          string `json:"name,omitempty"`
 	Description   string `json:"description,omitempty"`
-	Website       any    `json:"website,omitempty"` // Can be a string or a list of strings
+	Website       any    `json:"website,omitempty"`
 	Slogan        string `json:"slogan,omitempty"`
-	EmployeeCount any    `json:"employee_count,omitempty"` // Type can vary, 'any' is flexible
+	EmployeeCount any    `json:"employee_count,omitempty"`
 	Headquarters  string `json:"headquarters,omitempty"`
 }
 

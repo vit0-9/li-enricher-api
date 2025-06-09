@@ -1,9 +1,7 @@
 basePath: /api/v1
 host: localhost:3000
 info:
-  contact:
-    email: support@example.com
-    name: API Support
+  contact: {}
   description: An API to enrich company data using LinkedIn.
   license:
     name: Apache 2.0
@@ -20,6 +18,10 @@ paths:
         in: header
         name: X-Linkedin-Session-Cookie
         required: true
+        type: string
+      - description: Proxy URL to use for validation
+        in: header
+        name: X-Proxy-Url
         type: string
       produces:
       - application/json
@@ -66,6 +68,10 @@ paths:
       - description: LinkedIn 'li_at' session cookie for authenticated scraping
         in: header
         name: X-Linkedin-Session-Cookie
+        type: string
+      - description: Proxy URL to use for validation
+        in: header
+        name: X-Proxy-Url
         type: string
       produces:
       - application/json

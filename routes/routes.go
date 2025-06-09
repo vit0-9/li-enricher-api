@@ -34,6 +34,7 @@ func Setup(app *fiber.App) {
 // @Produce      json
 // @Param        slug                        path      string                          true   "Company Slug (e.g., 'google')"
 // @Param        X-Linkedin-Session-Cookie   header    string                          false  "LinkedIn 'li_at' session cookie for authenticated scraping"
+// @Param        X-Proxy-Url header string false "Proxy URL to use for validation"
 // @Success      200                         {object}  object{scrapeType=string,data=object}  "Successfully scraped data. 'scrapeType' will be 'full' or 'public'."
 // @Failure      400                         {object}  object{error=string}                   "Bad Request - Invalid input"
 // @Failure      500                         {object}  object{error=string,details=string}    "Internal Server Error"
@@ -41,13 +42,14 @@ func Setup(app *fiber.App) {
 func (r *AppRoutes) handleScrapeCompany(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 	sessionCookie := c.Get("X-Linkedin-Session-Cookie")
+	proxyURL := c.Get("X-Proxy-Url")
 
 	if slug == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Company slug cannot be empty"})
 	}
 
 	// The handler's only job is to call the service and render the response.
-	data, scrapeType, err := r.companyService.EnrichCompanyData(slug, sessionCookie)
+	data, scrapeType, err := r.companyService.EnrichCompanyData(slug, sessionCookie, proxyURL)
 	if err != nil {
 		log.Printf("Error from service: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -68,6 +70,7 @@ func (r *AppRoutes) handleScrapeCompany(c *fiber.Ctx) error {
 // @Tags         Authentication
 // @Produce      json
 // @Param        X-Linkedin-Session-Cookie   header    string                                 true   "LinkedIn 'li_at' session cookie"
+// @Param        X-Proxy-Url header string false "Proxy URL to use for validation"
 // @Success      200                         {object}  object{valid=bool}
 // @Failure      400                         {object}  object{error=string}
 // @Failure      500                         {object}  object{error=string,details=string}
@@ -78,7 +81,9 @@ func (r *AppRoutes) handleValidateAuth(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Header 'X-Linkedin-Session-Cookie' is required"})
 	}
 
-	isValid, err := r.authService.ValidateSession(sessionCookie)
+	proxyURL := c.Get("X-Proxy-Url")
+
+	isValid, err := r.authService.ValidateSession(sessionCookie, proxyURL)
 	if err != nil {
 		log.Printf("Error during session validation: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
