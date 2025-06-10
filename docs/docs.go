@@ -19,29 +19,33 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/validate": {
+        "/companies/search/{query}": {
             "get": {
-                "description": "Checks if a given LinkedIn session cookie ('li_at') is valid and active.",
+                "description": "Searches for companies using LinkedIn GraphQL API with the given query string and session cookie.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "LinkedIn"
                 ],
-                "summary": "Validate Session Cookie",
+                "summary": "Search companies on LinkedIn",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "LinkedIn 'li_at' session cookie",
-                        "name": "X-Linkedin-Session-Cookie",
-                        "in": "header",
+                        "description": "Search query",
+                        "name": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Proxy URL to use for validation",
-                        "name": "X-Proxy-Url",
-                        "in": "header"
+                        "description": "LinkedIn session cookie (li_at)",
+                        "name": "X-Linkedin-Session-Cookie",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -84,7 +88,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/company/{slug}": {
+        "/companies/{slug}": {
             "get": {
                 "description": "Scrapes data for a LinkedIn company page. If a session cookie is provided via the 'X-Linkedin-Session-Cookie' header, it performs a full, authenticated scrape. Otherwise, it performs a public scrape for basic JSON-LD data.",
                 "consumes": [
@@ -135,6 +139,71 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "details": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/validate-cookie": {
+            "get": {
+                "description": "Checks if a given LinkedIn session cookie ('li_at') is valid and active.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Validate Session Cookie",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "LinkedIn 'li_at' session cookie",
+                        "name": "X-Linkedin-Session-Cookie",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Proxy URL to use for validation",
+                        "name": "X-Proxy-Url",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "valid": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "properties": {

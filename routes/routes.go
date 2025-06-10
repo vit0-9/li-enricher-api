@@ -22,8 +22,9 @@ func Setup(app *fiber.App) {
 
 	api := app.Group("/api/v1")
 
-	api.Get("/auth/validate", routes.handleValidateAuth)
-	api.Get("/company/:slug", routes.handleScrapeCompany)
+	api.Get("/validate-cookie", routes.handleValidateAuth)
+	api.Get("/companies/:slug", routes.handleScrapeCompany)
+	api.Get("/companies/search/:query", handleSearchCompanies)
 }
 
 // handleScrapeCompany scrapes data for a LinkedIn company page.
@@ -38,7 +39,7 @@ func Setup(app *fiber.App) {
 // @Success      200                         {object}  object{scrapeType=string,data=object}  "Successfully scraped data. 'scrapeType' will be 'full' or 'public'."
 // @Failure      400                         {object}  object{error=string}                   "Bad Request - Invalid input"
 // @Failure      500                         {object}  object{error=string,details=string}    "Internal Server Error"
-// @Router       /company/{slug} [get]
+// @Router       /companies/{slug} [get]
 func (r *AppRoutes) handleScrapeCompany(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 	sessionCookie := c.Get("X-Linkedin-Session-Cookie")
@@ -74,7 +75,7 @@ func (r *AppRoutes) handleScrapeCompany(c *fiber.Ctx) error {
 // @Success      200                         {object}  object{valid=bool}
 // @Failure      400                         {object}  object{error=string}
 // @Failure      500                         {object}  object{error=string,details=string}
-// @Router       /auth/validate [get]
+// @Router       /validate-cookie [get]
 func (r *AppRoutes) handleValidateAuth(c *fiber.Ctx) error {
 	sessionCookie := c.Get("X-Linkedin-Session-Cookie")
 	if sessionCookie == "" {
@@ -90,4 +91,38 @@ func (r *AppRoutes) handleValidateAuth(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"valid": isValid})
+}
+
+// handleSearchCompanies godoc
+// @Summary Search companies on LinkedIn
+// @Description Searches for companies using LinkedIn GraphQL API with the given query string and session cookie.
+// @Tags LinkedIn
+// @Accept json
+// @Produce json
+// @Param query path string true "Search query"
+// @Param X-Linkedin-Session-Cookie header string true "LinkedIn session cookie (li_at)"
+// @Success      200                         {object}  object{valid=bool}
+// @Failure      400                         {object}  object{error=string}
+// @Failure      500                        {object}  object{error=string,details=string}
+// @Router /companies/search/{query} [get]
+func handleSearchCompanies(c *fiber.Ctx) error {
+	searchQuery := c.Params("query")
+	sessionCookie := c.Get("X-Linkedin-Session-Cookie")
+
+	if searchQuery == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Search query cannot be empty"})
+	}
+	if sessionCookie == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "X-Linkedin-Session-Cookie header is required"})
+	}
+
+	results, err := services.SearchCompanies(searchQuery, sessionCookie)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Failed to execute search",
+			"details": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(results)
 }

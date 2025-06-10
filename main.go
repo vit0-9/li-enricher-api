@@ -20,9 +20,8 @@ import (
 // @host            localhost:3000
 // @BasePath        /api/v1
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, relying on environment variables")
 	}
 	port := os.Getenv("PORT")
 	if port == "" {

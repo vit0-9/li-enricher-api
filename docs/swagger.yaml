@@ -9,50 +9,7 @@ info:
   title: LinkedIn Enricher API
   version: "1.0"
 paths:
-  /auth/validate:
-    get:
-      description: Checks if a given LinkedIn session cookie ('li_at') is valid and
-        active.
-      parameters:
-      - description: LinkedIn 'li_at' session cookie
-        in: header
-        name: X-Linkedin-Session-Cookie
-        required: true
-        type: string
-      - description: Proxy URL to use for validation
-        in: header
-        name: X-Proxy-Url
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              valid:
-                type: boolean
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            properties:
-              details:
-                type: string
-              error:
-                type: string
-            type: object
-      summary: Validate Session Cookie
-      tags:
-      - Authentication
-  /company/{slug}:
+  /companies/{slug}:
     get:
       consumes:
       - application/json
@@ -104,4 +61,93 @@ paths:
       summary: Scrape Company Data
       tags:
       - Company
+  /companies/search/{query}:
+    get:
+      consumes:
+      - application/json
+      description: Searches for companies using LinkedIn GraphQL API with the given
+        query string and session cookie.
+      parameters:
+      - description: Search query
+        in: path
+        name: query
+        required: true
+        type: string
+      - description: LinkedIn session cookie (li_at)
+        in: header
+        name: X-Linkedin-Session-Cookie
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              valid:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              details:
+                type: string
+              error:
+                type: string
+            type: object
+      summary: Search companies on LinkedIn
+      tags:
+      - LinkedIn
+  /validate-cookie:
+    get:
+      description: Checks if a given LinkedIn session cookie ('li_at') is valid and
+        active.
+      parameters:
+      - description: LinkedIn 'li_at' session cookie
+        in: header
+        name: X-Linkedin-Session-Cookie
+        required: true
+        type: string
+      - description: Proxy URL to use for validation
+        in: header
+        name: X-Proxy-Url
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              valid:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              details:
+                type: string
+              error:
+                type: string
+            type: object
+      summary: Validate Session Cookie
+      tags:
+      - Authentication
 swagger: "2.0"

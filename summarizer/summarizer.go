@@ -3,39 +3,9 @@ package summarizer
 import (
 	"fmt"
 	"time"
+
+	"github.com/vit0-9/li-enricher-api/utils"
 )
-
-func safeGetString(data map[string]interface{}, path ...string) string {
-	var current interface{} = data
-	for _, key := range path {
-		m, ok := current.(map[string]interface{})
-		if !ok {
-			return ""
-		}
-		current, ok = m[key]
-		if !ok {
-			return ""
-		}
-	}
-	s, _ := current.(string)
-	return s
-}
-
-// safeGet is a helper to get a nested value without asserting its type.
-func safeGet(data map[string]interface{}, path ...string) interface{} {
-	var current interface{} = data
-	for _, key := range path {
-		m, ok := current.(map[string]interface{})
-		if !ok {
-			return nil
-		}
-		current, ok = m[key]
-		if !ok {
-			return nil
-		}
-	}
-	return current
-}
 
 // CreateSummary transforms the raw data map into a structured summary.
 func CreateSummary(data map[string]interface{}) (map[string]interface{}, error) {
@@ -61,15 +31,15 @@ func CreateSummary(data map[string]interface{}) (map[string]interface{}, error) 
 
 	// Build the final summary map using our safe accessors.
 	summary := make(map[string]interface{})
-	summary["name"] = safeGetString(companyData, "name")
-	summary["linkedin_handle"] = safeGetString(companyData, "universalName")
-	summary["linkedin_profile_url"] = safeGetString(companyData, "url")
-	summary["external_id"] = safeGetString(companyData, "entityUrn")
-	summary["website"] = safeGetString(companyData, "websiteUrl")
-	summary["tagline"] = safeGetString(companyData, "tagline")
-	summary["description"] = safeGetString(companyData, "description")
+	summary["name"] = utils.SafeGetString(companyData, "name")
+	summary["linkedin_handle"] = utils.SafeGetString(companyData, "universalName")
+	summary["linkedin_profile_url"] = utils.SafeGetString(companyData, "url")
+	summary["external_id"] = utils.SafeGetString(companyData, "entityUrn")
+	summary["website"] = utils.SafeGetString(companyData, "websiteUrl")
+	summary["tagline"] = utils.SafeGetString(companyData, "tagline")
+	summary["description"] = utils.SafeGetString(companyData, "description")
 
-	if foundedOn, ok := safeGet(companyData, "foundedOn").(map[string]interface{}); ok {
+	if foundedOn, ok := utils.SafeGet(companyData, "foundedOn").(map[string]interface{}); ok {
 		if year, ok := foundedOn["year"].(float64); ok { // JSON numbers are float64
 			summary["founded_year"] = int(year)
 		}
@@ -80,7 +50,7 @@ func CreateSummary(data map[string]interface{}) (map[string]interface{}, error) 
 	}
 
 	// Safely extract employee count range
-	if empRange, ok := safeGet(companyData, "employeeCountRange").(map[string]interface{}); ok {
+	if empRange, ok := utils.SafeGet(companyData, "employeeCountRange").(map[string]interface{}); ok {
 		start, startOk := empRange["start"].(float64)
 		end, endOk := empRange["end"].(float64)
 		if startOk && endOk {
@@ -92,7 +62,7 @@ func CreateSummary(data map[string]interface{}) (map[string]interface{}, error) 
 	// - Extract logo URL
 	// - Extract office locations
 	// - Extract funding summary
-	// For brevity, these are left as an exercise but would follow the same safeGet/safeGetString pattern.
+	// For brevity, these are left as an exercise but would follow the same utils.SafeGet/utils.SafeGetString pattern.
 	summary["headquarters"] = extractHeadquarters(companyData)
 	summary["office_locations"] = extractOfficeLocations(companyData)
 	summary["funding_summary"] = extractFundingSummary(companyData)
@@ -101,7 +71,7 @@ func CreateSummary(data map[string]interface{}) (map[string]interface{}, error) 
 }
 
 func extractHeadquarters(companyData map[string]interface{}) map[string]interface{} {
-	hqData, ok := safeGet(companyData, "headquarter").(map[string]interface{})
+	hqData, ok := utils.SafeGet(companyData, "headquarter").(map[string]interface{})
 	if !ok {
 		return nil
 	}
@@ -112,16 +82,16 @@ func extractHeadquarters(companyData map[string]interface{}) map[string]interfac
 
 	return map[string]interface{}{
 		"is_headquarters": true,
-		"city":            safeGetString(address, "city"),
-		"state":           safeGetString(address, "geographicArea"),
-		"country":         safeGetString(address, "country"),
-		"postal_code":     safeGetString(address, "postalCode"),
+		"city":            utils.SafeGetString(address, "city"),
+		"state":           utils.SafeGetString(address, "geographicArea"),
+		"country":         utils.SafeGetString(address, "country"),
+		"postal_code":     utils.SafeGetString(address, "postalCode"),
 	}
 }
 
 func extractOfficeLocations(companyData map[string]interface{}) []map[string]interface{} {
 	locations := []map[string]interface{}{}
-	groupedLocations, ok := safeGet(companyData, "groupedLocations").([]interface{})
+	groupedLocations, ok := utils.SafeGet(companyData, "groupedLocations").([]interface{})
 	if !ok {
 		return locations
 	}
@@ -148,7 +118,7 @@ func extractOfficeLocations(companyData map[string]interface{}) []map[string]int
 }
 
 func extractFundingSummary(companyData map[string]interface{}) map[string]interface{} {
-	fundingData, ok := safeGet(companyData, "crunchbaseFundingData").(map[string]interface{})
+	fundingData, ok := utils.SafeGet(companyData, "crunchbaseFundingData").(map[string]interface{})
 	if !ok {
 		return nil
 	}
