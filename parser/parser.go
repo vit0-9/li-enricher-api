@@ -31,13 +31,17 @@ func isJSONValid(data map[string]interface{}) bool {
 	if !ok {
 		return false
 	}
-
 	nestedDataField, ok := dataField["data"].(map[string]interface{})
 	if !ok {
 		return false
 	}
 
+	// also check for nestedDataField["organizationDashCompaniesByIds"]
 	_, ok = nestedDataField["organizationDashCompaniesByUniversalName"]
+	if !ok {
+		_, ok = nestedDataField["*organizationDashCompaniesByIds"]
+		log.Println("Checking for organizationDashCompaniesByUniversalName or organizationDashCompaniesByIds:", ok)
+	}
 	return ok
 }
 
@@ -76,6 +80,8 @@ func ExtractCompanyJSON(htmlContent string) (map[string]interface{}, error) {
 	if len(validResults) > 1 {
 		log.Printf("Found %d valid JSON objects. Returning the last one. Might change in the future", len(validResults))
 	}
+
+	log.Printf("✅ Found %d valid JSON objects in the HTML.", len(validResults))
 
 	// Return the last valid result. @TODO: This might change in the future, better solution needed.
 	return validResults[len(validResults)-1], nil
